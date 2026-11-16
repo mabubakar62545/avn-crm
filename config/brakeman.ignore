@@ -1,0 +1,25 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "a5f9f9c589a1effb2341582ef3ed6883333adde0c9d3cf53427e9871fc215a64",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped model attribute",
+      "file": "app/views/account/two_factors/new.html.erb",
+      "line": 14,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
+      "code": "RQRCode::QRCode.new(Current.user.otp_provisioning_uri(ROTP::Base32.random)).as_svg(:module_size => 4, :use_path => true, :viewbox => true)",
+      "render_path": null,
+      "location": {
+        "type": "template",
+        "template": "account/two_factors/new"
+      },
+      "user_input": "Current.user.otp_provisioning_uri(ROTP::Base32.random)",
+      "confidence": "Weak",
+      "cwe_id": [79],
+      "note": "False positive: the SVG markup is generated entirely by RQRCode; the provisioning URI is encoded as QR modules, never interpolated into the markup."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}
