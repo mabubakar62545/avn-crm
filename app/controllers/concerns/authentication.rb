@@ -12,6 +12,19 @@ module Authentication
     end
   end
 
+  def complete_sign_in(user)
+    user.reset_failed_logins!
+    start_new_session_for user
+    AuditEvent.record("login.succeeded", user:, mfa: user.otp_enabled?)
+    redirect_to after_authentication_url
+  end
+
+  def terminate_session
+    AuditEvent.record("logout", user: Current.user)
+    Current.session.destroy
+    cookies.delete(:session_id)
+  end
+
   private
     def authenticated?
       resume_session
@@ -23,6 +36,12 @@ module Authentication
 
     def resume_session
       Current.session ||= find_session_by_cookie
+    end
+
+    def complete_sign_in(user)
+      user.reset_failed_logins!
+      start_new_session_for user
+      redirect_to after_authentication_url
     end
 
     def find_session_by_cookie

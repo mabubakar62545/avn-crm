@@ -1,0 +1,5 @@
+<%# app/views/account/two_factors/recovery_codes.html.erb %>
+<h1>Save your recovery codes</h1>
+<p><strong>This is the only time you'll see these.</strong> Each code works once if you lose your phone.</p>
+<pre><%= @recovery_codes.join("\n") %></pre>
+<p><%= link_to "I've saved them, continue", account_sessions_path %></p>

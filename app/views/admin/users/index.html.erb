@@ -1,0 +1,15 @@
+<%# app/views/admin/users/index.html.erb %>
+<h1>Users</h1>
+<table>
+  <tr><th>Email</th><th>Role</th><th>Verified</th><th>MFA</th><th>Status</th><th>Devices</th></tr>
+  <% @users.each do |u| %>
+    <tr>
+      <td><%= link_to u.email_address, admin_user_path(u) %></td>
+      <td><%= u.role %></td>
+      <td><%= u.verified? ? "Yes" : "No" %></td>
+      <td><%= u.otp_enabled? ? "On" : "Off" %></td>
+      <td><%= u.locked? ? "Locked" : "Active" %></td>
+      <td><%= u.sessions.size %></td>
+    </tr>
+  <% end %>
+</table>

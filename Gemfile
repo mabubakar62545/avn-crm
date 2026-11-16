@@ -66,3 +66,8 @@ group :test do
 end
 
 gem "rack-attack", "~> 6.8"
+
+gem "rotp", "~> 6.4"
+gem "rqrcode", "~> 3.2"
+
+gem "pundit", "~> 2.5"

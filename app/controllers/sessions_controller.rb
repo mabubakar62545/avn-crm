@@ -9,11 +9,13 @@ class SessionsController < ApplicationController
 
   def destroy
     Current.user.sessions.find(params[:id]).destroy
+    AuditEvent.record("session.revoked", user: Current.user, scope: "single")
     redirect_to account_sessions_path, notice: "Device signed out."
   end
 
   def others
     Current.user.sessions.where.not(id: Current.session.id).destroy_all
+    AuditEvent.record("session.revoked", user: Current.user, scope: "others") 
     redirect_to account_sessions_path, notice: "All other devices signed out."
   end
 
@@ -24,16 +26,22 @@ class SessionsController < ApplicationController
     user = User.authenticate_by(params.permit(:email_address, :password))
 
     if user.nil?
-      User.find_by(email_address: params[:email_address])&.register_failed_login!
+      candidate = User.find_by(email_address: params[:email_address])
+      candidate&.register_failed_login!
+      AuditEvent.record("login.failed", user: candidate, attempted_email: params[:email_address].to_s.truncate(254))
       redirect_to new_session_path, alert: GENERIC_FAILURE
     elsif user.locked?
+      AuditEvent.record("login.blocked", user:, reason: "locked")
       redirect_to new_session_path, alert: GENERIC_FAILURE
     elsif !user.verified?
       redirect_to new_email_verification_path, alert: "Please confirm your email first."
     else
-      user.reset_failed_logins!
-      start_new_session_for user
-      redirect_to after_authentication_url
+      if user.otp_enabled?
+        session[:pending_mfa] = { "user_id" => user.id, "expires_at" => 5.minutes.from_now.to_i }
+        redirect_to new_two_factor_challenge_path
+      else
+        complete_sign_in user
+      end
     end
   end
 

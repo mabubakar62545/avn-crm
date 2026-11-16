@@ -8,6 +8,7 @@ class PasswordsController < ApplicationController
 
   def create
     if user = User.find_by(email_address: params[:email_address])
+      AuditEvent.record("password.reset_requested", user:)
       PasswordsMailer.reset(user).deliver_later
     end
 

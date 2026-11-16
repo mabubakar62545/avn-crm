@@ -1,0 +1,12 @@
+<%# app/views/account/two_factors/new.html.erb %>
+<h1>Set up two-factor authentication</h1>
+<p>1. Scan this with your authenticator app:</p>
+<%= @qr_svg.html_safe %>
+<p>Can't scan? Enter this key manually: <code><%= @secret.scan(/.{4}/).join(" ") %></code></p>
+
+<p>2. Enter the 6-digit code from the app:</p>
+<%= form_with url: account_two_factor_path, data: { turbo: false } do |f| %>
+  <%= f.text_field :code, required: true, autocomplete: "one-time-code",
+        inputmode: "numeric", pattern: "[0-9 ]*", maxlength: 7, autofocus: true %>
+  <%= f.submit "Verify and enable" %>
+<% end %>

@@ -18,3 +18,15 @@
   <% end %>
 </table>
 <%= button_to "Sign out all other devices", others_account_sessions_path, method: :delete %>
+
+<h2>Two-factor authentication</h2>
+<% if Current.user.otp_enabled? %>
+  <p>On. <%= Current.user.recovery_codes.unused.count %> recovery codes left.</p>
+  <%= form_with url: account_two_factor_path, method: :delete do |f| %>
+    <%= f.password_field :password, placeholder: "Current password", required: true, autocomplete: "current-password" %>
+    <%= f.text_field :code, placeholder: "Authenticator code", required: true, autocomplete: "one-time-code" %>
+    <%= f.submit "Turn off two-factor" %>
+  <% end %>
+<% else %>
+  <%= link_to "Turn on two-factor", new_account_two_factor_path %>
+<% end %>

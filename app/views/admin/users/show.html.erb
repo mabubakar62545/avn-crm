@@ -1,0 +1,23 @@
+<%# app/views/admin/users/show.html.erb %>
+<h1><%= @user.email_address %></h1>
+<p>Role: <strong><%= @user.role %></strong> · Joined <%= @user.created_at.to_date %> ·
+   MFA <%= @user.otp_enabled? ? "on" : "off" %> · <%= @user.sessions.count %> active devices</p>
+
+<% if policy(@user).update? %>
+  <%= form_with model: [ :admin, @user ] do |f| %>
+    <%= f.select :role, User::ROLES %>
+    <%= f.submit "Change role" %>
+  <% end %>
+<% end %>
+
+<% if @user.locked? && policy(@user).unlock? %>
+  <%= button_to "Unlock account", unlock_admin_user_path(@user), method: :patch %>
+<% end %>
+
+<% if policy(@user).revoke_sessions? %>
+  <%= button_to "Sign out of all devices", revoke_sessions_admin_user_path(@user), method: :delete %>
+<% end %>
+
+<%= link_to "Back", admin_users_path %>
+<%= link_to "Manage users", admin_users_path if policy(User).index? %>
+<%= link_to "View audit history", admin_audit_events_path(user_id: @user.id) if policy(AuditEvent).index? %>

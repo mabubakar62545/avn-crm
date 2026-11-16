@@ -1,0 +1,7 @@
+<h1>Two-factor authentication</h1>
+<p>Enter the 6-digit code from your authenticator app, or one of your recovery codes.</p>
+<%= form_with url: two_factor_challenge_path do |f| %>
+  <%= f.text_field :code, required: true, autocomplete: "one-time-code", autofocus: true, maxlength: 11 %>
+  <%= f.submit "Verify" %>
+<% end %>
+<%= link_to "Cancel", new_session_path %>

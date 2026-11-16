@@ -1,0 +1,15 @@
+<%# app/views/admin/audit_events/index.html.erb %>
+<h1>Audit log</h1>
+<table>
+  <tr><th>When</th><th>Event</th><th>User</th><th>By</th><th>IP</th><th>Details</th></tr>
+  <% @events.each do |e| %>
+    <tr>
+      <td><%= e.created_at.to_fs(:db) %></td>
+      <td><%= e.action %></td>
+      <td><%= e.user_email || e.metadata["attempted_email"] %></td>
+      <td><%= e.actor&.email_address || "system" %></td>
+      <td><%= e.ip_address %></td>
+      <td><%= e.metadata.except("attempted_email").to_json if e.metadata.except("attempted_email").any? %></td>
+    </tr>
+  <% end %>
+</table>
