@@ -1,0 +1,15 @@
+<%# app/views/registrations/new.html.erb %>
+<h1>Create account</h1>
+
+<% if @user.errors.any? %>
+  <ul>
+    <% @user.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+  </ul>
+<% end %>
+
+<%= form_with model: @user, url: registration_path do |f| %>
+  <%= f.email_field :email_address, required: true, autocomplete: "username", placeholder: "Email" %>
+  <%= f.password_field :password, required: true, autocomplete: "new-password", minlength: 12, placeholder: "Password" %>
+  <%= f.password_field :password_confirmation, required: true, autocomplete: "new-password", placeholder: "Confirm password" %>
+  <%= f.submit "Sign up" %>
+<% end %>

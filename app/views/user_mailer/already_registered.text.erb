@@ -1,0 +1,4 @@
+<%# app/views/user_mailer/already_registered.html.erb %>
+<p>Someone tried to create an account with this email, but you already have one.</p>
+<p><%= link_to "Sign in", new_session_url %> or <%= link_to "reset your password", new_password_url %>.</p>
+<p>If this wasn't you, you can ignore this email.</p>

@@ -1,0 +1,4 @@
+<%# app/views/user_mailer/email_verification.html.erb %>
+<p>Confirm your email address to activate your account:</p>
+<p><%= link_to "Confirm email", email_verification_url(@token) %></p>
+<p>This link expires in 2 days. If you didn't sign up, ignore this email.</p>

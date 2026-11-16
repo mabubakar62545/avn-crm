@@ -1,0 +1,6 @@
+<%# app/views/email_verifications/new.html.erb %>
+<h1>Resend confirmation link</h1>
+<%= form_with url: email_verifications_path do |f| %>
+  <%= f.email_field :email_address, required: true, autocomplete: "username", placeholder: "Email" %>
+  <%= f.submit "Send link" %>
+<% end %>
