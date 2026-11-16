@@ -1,9 +1,31 @@
-<% password_digest = BCrypt::Password.create("password") %>
+<% password_digest = BCrypt::Password.create("TestPassword123!") %>
 
-one:
-  email_address: one@example.com
+admin:
+  email_address: admin@example.com
   password_digest: <%= password_digest %>
+  role: admin
+  verified_at: <%= 1.week.ago.to_fs(:db) %>
 
-two:
-  email_address: two@example.com
+manager:
+  email_address: manager@example.com
   password_digest: <%= password_digest %>
+  role: manager
+  verified_at: <%= 1.week.ago.to_fs(:db) %>
+
+member:
+  email_address: member@example.com
+  password_digest: <%= password_digest %>
+  role: member
+  verified_at: <%= 1.week.ago.to_fs(:db) %>
+
+unverified:
+  email_address: unverified@example.com
+  password_digest: <%= password_digest %>
+  role: member
+
+locked:
+  email_address: locked@example.com
+  password_digest: <%= password_digest %>
+  role: member
+  verified_at: <%= 1.week.ago.to_fs(:db) %>
+  locked_until: <%= 1.hour.from_now.to_fs(:db) %>

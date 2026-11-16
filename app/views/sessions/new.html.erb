@@ -1,12 +1,27 @@
-<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
-<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+<% content_for :title, "Sign in" %>
 
-<%= form_with url: session_path do |form| %>
-  <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address] %><br>
-  <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72 %><br>
-  <%= form.submit "Sign in" %>
-<% end %>
-<br>
+<div class="card">
+  <h1>Sign in</h1>
+  <p class="muted">Welcome back. Sign in to continue.</p>
 
-<%= link_to "Forgot password?", new_password_path %>
-<%= link_to "Sign up", new_registration_path %>
+  <%= form_with url: session_path, class: "form", id: "sign_in_form" do |form| %>
+    <div class="field">
+      <%= form.label :email_address, "Email" %>
+      <%= form.email_field :email_address, class: "input", required: true, autofocus: true, autocomplete: "username", placeholder: "you@company.com", value: params[:email_address] %>
+    </div>
+    <div class="field">
+      <%= form.label :password %>
+      <%= form.password_field :password, class: "input", required: true, autocomplete: "current-password", maxlength: 72 %>
+    </div>
+    <%= form.submit "Sign in", class: "btn btn--block" %>
+  <% end %>
+
+  <div class="auth-links">
+    <%= link_to "Forgot password?", new_password_path %>
+    <%= link_to "Didn't get the confirmation email?", new_email_verification_path %>
+  </div>
+</div>
+
+<p class="text-center muted small" style="margin-top:1rem">
+  New here? <%= link_to "Create an account", new_registration_path %>
+</p>

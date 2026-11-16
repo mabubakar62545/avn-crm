@@ -1,23 +1,63 @@
-<%# app/views/admin/users/show.html.erb %>
-<h1><%= @user.email_address %></h1>
-<p>Role: <strong><%= @user.role %></strong> · Joined <%= @user.created_at.to_date %> ·
-   MFA <%= @user.otp_enabled? ? "on" : "off" %> · <%= @user.sessions.count %> active devices</p>
+<% content_for :title, @user.email_address %>
 
-<% if policy(@user).update? %>
-  <%= form_with model: [ :admin, @user ] do |f| %>
-    <%= f.select :role, User::ROLES %>
-    <%= f.submit "Change role" %>
-  <% end %>
+<div class="page-header">
+  <div>
+    <p><%= link_to "← All users", admin_users_path %></p>
+    <h1><%= @user.email_address %></h1>
+  </div>
+  <div class="row"><%= role_badge(@user) %> <%= status_badge(@user) %></div>
+</div>
+
+<div class="grid grid--2">
+  <section class="card">
+    <div class="card__title"><h2>Account</h2></div>
+    <dl class="details" id="user_details">
+      <dt>Role</dt><dd><%= @user.role.capitalize %></dd>
+      <dt>Email verified</dt><dd><%= @user.verified? ? @user.verified_at.to_fs(:long) : "Not yet" %></dd>
+      <dt>Two-factor</dt><dd><%= @user.otp_enabled? ? "On" : "Off" %></dd>
+      <dt>Active devices</dt><dd><%= @user.sessions.count %></dd>
+      <dt>Failed logins</dt><dd><%= @user.failed_login_attempts %></dd>
+      <dt>Locked until</dt><dd><%= @user.locked? ? @user.locked_until.to_fs(:long) : "—" %></dd>
+      <dt>Joined</dt><dd><%= @user.created_at.to_date.to_fs(:long) %></dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <div class="card__title"><h2>Actions</h2></div>
+
+    <% if policy(@user).update? %>
+      <%= form_with model: [ :admin, @user ], class: "form-row", id: "change_role_form" do |f| %>
+        <div class="field">
+          <%= f.label :role %>
+          <%= f.select :role, User::ROLES.map { |r| [ r.capitalize, r ] }, {}, class: "input" %>
+        </div>
+        <%= f.submit "Change role", class: "btn" %>
+      <% end %>
+    <% elsif @user == Current.user %>
+      <p class="muted">You can't change your own role.</p>
+    <% end %>
+
+    <div class="row" style="margin-top:1rem">
+      <% if @user.locked? && policy(@user).unlock? %>
+        <%= button_to "Unlock account", unlock_admin_user_path(@user), method: :patch, class: "btn btn--secondary" %>
+      <% end %>
+      <% if policy(@user).revoke_sessions? %>
+        <%= button_to "Sign out of all devices", revoke_sessions_admin_user_path(@user), method: :delete, class: "btn btn--danger" %>
+      <% end %>
+    </div>
+
+    <% unless policy(@user).update? || policy(@user).revoke_sessions? %>
+      <p class="muted mb-0">Only admins can change this account.</p>
+    <% end %>
+  </section>
+</div>
+
+<% if @recent_events %>
+  <section class="card card--flush" style="margin-top:1rem">
+    <div class="card__title" style="padding:1.25rem 1.25rem 0">
+      <h2>Recent activity</h2>
+      <%= link_to "Full history", admin_audit_events_path(user_id: @user.id) %>
+    </div>
+    <%= render "admin/audit_events/table", events: @recent_events %>
+  </section>
 <% end %>
-
-<% if @user.locked? && policy(@user).unlock? %>
-  <%= button_to "Unlock account", unlock_admin_user_path(@user), method: :patch %>
-<% end %>
-
-<% if policy(@user).revoke_sessions? %>
-  <%= button_to "Sign out of all devices", revoke_sessions_admin_user_path(@user), method: :delete %>
-<% end %>
-
-<%= link_to "Back", admin_users_path %>
-<%= link_to "Manage users", admin_users_path if policy(User).index? %>
-<%= link_to "View audit history", admin_audit_events_path(user_id: @user.id) if policy(AuditEvent).index? %>

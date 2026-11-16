@@ -1,0 +1,65 @@
+<% content_for :title, "Dashboard" %>
+
+<div class="page-header">
+  <div>
+    <h1>Welcome back</h1>
+    <p>Signed in as <strong><%= @user.email_address %></strong></p>
+  </div>
+</div>
+
+<div class="grid grid--stats" id="account_summary">
+  <div class="card stat">
+    <span class="stat__label">Role</span>
+    <span class="stat__value"><%= role_badge(@user) %></span>
+  </div>
+  <div class="card stat">
+    <span class="stat__label">Two-factor</span>
+    <span class="stat__value"><%= yes_no_badge(@user.otp_enabled?, yes: "On", no: "Off") %></span>
+  </div>
+  <div class="card stat">
+    <span class="stat__label">Signed-in devices</span>
+    <span class="stat__value"><%= @active_sessions %></span>
+  </div>
+  <div class="card stat">
+    <span class="stat__label">Member since</span>
+    <span class="stat__value"><%= @user.created_at.to_date.to_fs(:long) %></span>
+  </div>
+</div>
+
+<% unless @user.otp_enabled? %>
+  <div class="flash flash--info row row--between">
+    <span>Protect your account: turn on two-factor authentication.</span>
+    <%= link_to "Set up now", new_account_two_factor_path, class: "btn btn--sm" %>
+  </div>
+<% end %>
+
+<div class="grid grid--2">
+  <section class="card">
+    <div class="card__title"><h2>Quick links</h2></div>
+    <ul class="mb-0">
+      <li><%= link_to "Devices & two-factor", account_sessions_path %></li>
+      <% if policy(User).index? %>
+        <li><%= link_to "Manage users", admin_users_path %></li>
+      <% end %>
+      <% if policy(AuditEvent).index? %>
+        <li><%= link_to "Audit log", admin_audit_events_path %></li>
+      <% end %>
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="card__title"><h2>Recent account activity</h2></div>
+    <% if @recent_events.any? %>
+      <ul class="mb-0" id="recent_activity">
+        <% @recent_events.each do |event| %>
+          <li class="row">
+            <%= badge event.action, audit_tone(event.action) %>
+            <span class="muted small"><%= time_ago_in_words(event.created_at) %> ago<%= " from #{event.ip_address}" if event.ip_address %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="muted mb-0">No activity yet.</p>
+    <% end %>
+  </section>
+</div>

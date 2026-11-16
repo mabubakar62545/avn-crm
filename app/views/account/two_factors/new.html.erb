@@ -1,12 +1,32 @@
-<%# app/views/account/two_factors/new.html.erb %>
-<h1>Set up two-factor authentication</h1>
-<p>1. Scan this with your authenticator app:</p>
-<%= @qr_svg.html_safe %>
-<p>Can't scan? Enter this key manually: <code><%= @secret.scan(/.{4}/).join(" ") %></code></p>
+<% content_for :title, "Set up two-factor" %>
 
-<p>2. Enter the 6-digit code from the app:</p>
-<%= form_with url: account_two_factor_path, data: { turbo: false } do |f| %>
-  <%= f.text_field :code, required: true, autocomplete: "one-time-code",
-        inputmode: "numeric", pattern: "[0-9 ]*", maxlength: 7, autofocus: true %>
-  <%= f.submit "Verify and enable" %>
-<% end %>
+<div class="page-header">
+  <div>
+    <h1>Set up two-factor authentication</h1>
+    <p><%= link_to "← Back to security", account_sessions_path %></p>
+  </div>
+</div>
+
+<div class="card" style="max-width:640px">
+  <ol class="steps">
+    <li>
+      <p><strong>Scan this QR code</strong> with your authenticator app.</p>
+      <div class="qr"><%= @qr_svg %></div>
+    </li>
+    <li>
+      <p><strong>Can't scan it?</strong> Enter this key manually:</p>
+      <span class="secret" id="otp_secret"><%= @secret.scan(/.{1,4}/).join(" ") %></span>
+    </li>
+    <li>
+      <p><strong>Enter the 6-digit code</strong> the app shows.</p>
+      <%= form_with url: account_two_factor_path, data: { turbo: false }, class: "form-row", id: "enable_two_factor_form" do |f| %>
+        <div class="field">
+          <%= f.label :code, "Code" %>
+          <%= f.text_field :code, class: "input input--code", required: true, autocomplete: "one-time-code",
+                inputmode: "numeric", pattern: "[0-9 ]*", maxlength: 7, autofocus: true, placeholder: "123456" %>
+        </div>
+        <%= f.submit "Verify and enable", class: "btn" %>
+      <% end %>
+    </li>
+  </ol>
+</div>

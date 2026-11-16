@@ -1,29 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title><%= content_for(:title) || "Avn Crm" %></title>
+    <title><%= [ content_for(:title), "AVN CRM" ].compact.join(" · ") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Avn Crm">
+    <meta name="application-name" content="AVN CRM">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="<%= authenticated? ? "app" : "app app--guest" %>">
+    <% if authenticated? %>
+      <header class="topbar">
+        <div class="topbar__inner">
+          <%= link_to "AVN CRM", root_path, class: "brand" %>
+
+          <nav class="nav" aria-label="Main">
+            <%= nav_link_to "Dashboard", root_path %>
+            <%= nav_link_to "Security", account_sessions_path, prefix: true %>
+            <%= nav_link_to "Users", admin_users_path, prefix: true if policy(User).index? %>
+            <%= nav_link_to "Audit log", admin_audit_events_path, prefix: true if policy(AuditEvent).index? %>
+          </nav>
+
+          <div class="topbar__user">
+            <span class="topbar__email" title="<%= Current.user.email_address %>"><%= Current.user.email_address %></span>
+            <%= role_badge(Current.user) %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "btn btn--ghost btn--sm", form_class: "inline-form" %>
+          </div>
+        </div>
+      </header>
+    <% end %>
+
+    <main class="<%= authenticated? ? "container" : "container container--narrow" %>">
+      <% unless authenticated? %>
+        <div class="guest-brand"><%= link_to "AVN CRM", new_session_path, class: "brand brand--lg" %></div>
+      <% end %>
+
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
   </body>
 </html>

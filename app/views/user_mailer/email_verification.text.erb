@@ -1,3 +1,7 @@
-User#email_verification
+Hi,
 
-<%= @greeting %>, find me in app/views/user_mailer/email_verification.text.erb
+Confirm your email address to activate your AVN CRM account:
+
+<%= email_verification_url(@token) %>
+
+This link expires in 2 days. If you didn't sign up, you can ignore this email.

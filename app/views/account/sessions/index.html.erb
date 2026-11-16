@@ -1,32 +1,86 @@
-<%# app/views/account/sessions/index.html.erb %>
-<h1>Your devices</h1>
-<table>
-  <tr><th>Device</th><th>IP</th><th>Last active</th><th></th></tr>
-  <% @sessions.each do |s| %>
-    <tr>
-      <td><%= s.user_agent.to_s.truncate(60) %></td>
-      <td><%= s.ip_address %></td>
-      <td><%= time_ago_in_words(s.last_active_at) %> ago</td>
-      <td>
-        <% if s == Current.session %>
-          <strong>This device</strong>
-        <% else %>
-          <%= button_to "Sign out", account_session_path(s), method: :delete %>
-        <% end %>
-      </td>
-    </tr>
-  <% end %>
-</table>
-<%= button_to "Sign out all other devices", others_account_sessions_path, method: :delete %>
+<% content_for :title, "Security" %>
 
-<h2>Two-factor authentication</h2>
-<% if Current.user.otp_enabled? %>
-  <p>On. <%= Current.user.recovery_codes.unused.count %> recovery codes left.</p>
-  <%= form_with url: account_two_factor_path, method: :delete do |f| %>
-    <%= f.password_field :password, placeholder: "Current password", required: true, autocomplete: "current-password" %>
-    <%= f.text_field :code, placeholder: "Authenticator code", required: true, autocomplete: "one-time-code" %>
-    <%= f.submit "Turn off two-factor" %>
-  <% end %>
-<% else %>
-  <%= link_to "Turn on two-factor", new_account_two_factor_path %>
-<% end %>
+<div class="page-header">
+  <div>
+    <h1>Security</h1>
+    <p>Manage where you're signed in and how you sign in.</p>
+  </div>
+</div>
+
+<div class="stack">
+  <section class="card card--flush" id="devices">
+    <div class="card__title" style="padding:1.25rem 1.25rem 0">
+      <h2>Signed-in devices</h2>
+      <% if @sessions.size > 1 %>
+        <%= button_to "Sign out all other devices", others_account_sessions_path, method: :delete, class: "btn btn--secondary btn--sm" %>
+      <% end %>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Device</th><th>IP address</th><th>Signed in</th><th>Last active</th><th class="actions"></th></tr>
+        </thead>
+        <tbody>
+          <% @sessions.each do |s| %>
+            <tr id="<%= dom_id(s) %>">
+              <td>
+                <strong><%= device_label(s.user_agent) %></strong>
+                <div class="muted small" title="<%= s.user_agent %>"><%= s.user_agent.to_s.truncate(60) %></div>
+              </td>
+              <td class="nowrap"><%= s.ip_address.presence || "—" %></td>
+              <td class="nowrap"><%= s.created_at.to_fs(:short) %></td>
+              <td class="nowrap"><%= time_ago_in_words(s.last_active_at) %> ago</td>
+              <td class="actions">
+                <% if s == Current.session %>
+                  <%= badge "This device", :info %>
+                <% else %>
+                  <%= button_to "Sign out", account_session_path(s), method: :delete, class: "btn btn--ghost btn--sm" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="two_factor">
+    <div class="card__title">
+      <h2>Two-factor authentication</h2>
+      <%= yes_no_badge(Current.user.otp_enabled?, yes: "On", no: "Off") %>
+    </div>
+
+    <% if Current.user.otp_enabled? %>
+      <% remaining = Current.user.recovery_codes.unused.count %>
+      <p>
+        You'll be asked for a code from your authenticator app when you sign in.
+        You have <strong><%= pluralize(remaining, "recovery code") %></strong> left.
+      </p>
+      <% if remaining <= 3 %>
+        <div class="flash flash--alert">You're running low on recovery codes. Turn two-factor off and on again to get a new set.</div>
+      <% end %>
+
+      <h3 class="label">Turn off two-factor</h3>
+      <%= form_with url: account_two_factor_path, method: :delete, class: "form-row", id: "disable_two_factor_form" do |f| %>
+        <div class="field">
+          <%= f.label :password, "Current password" %>
+          <%= f.password_field :password, class: "input", required: true, autocomplete: "current-password" %>
+        </div>
+        <div class="field">
+          <%= f.label :code, "Authenticator or recovery code" %>
+          <%= f.text_field :code, class: "input", required: true, autocomplete: "one-time-code", maxlength: 11 %>
+        </div>
+        <%= f.submit "Turn off two-factor", class: "btn btn--danger" %>
+      <% end %>
+    <% else %>
+      <p>Add a second step to sign-in using an authenticator app such as 1Password, Google Authenticator or Authy.</p>
+      <%= link_to "Turn on two-factor", new_account_two_factor_path, class: "btn" %>
+    <% end %>
+  </section>
+
+  <section class="card">
+    <div class="card__title"><h2>Password</h2></div>
+    <p class="mb-0">To change your password, sign out and use
+      <%= link_to "Forgot password", new_password_path %>. Changing it signs you out on all other devices.</p>
+  </section>
+</div>

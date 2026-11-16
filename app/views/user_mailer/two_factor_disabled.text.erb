@@ -1,3 +1,4 @@
-<%# app/views/user_mailer/two_factor_disabled.html.erb %>
-<p>Two-factor authentication was turned off for your account.</p>
-<p>If this wasn't you, <%= link_to "reset your password", new_password_url %> immediately and turn it back on.</p>
+Two-factor authentication was turned off for your account.
+
+If this wasn't you, reset your password immediately and turn it back on:
+<%= new_password_url %>

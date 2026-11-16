@@ -1,5 +1,5 @@
-# app/controllers/two_factor_challenges_controller.rb
 class TwoFactorChallengesController < ApplicationController
+  skip_authorization_checks
   allow_unauthenticated_access
   rate_limit to: 10, within: 3.minutes, only: :create,
              with: -> { redirect_to new_session_path, alert: "Try again later." }
@@ -13,18 +13,18 @@ class TwoFactorChallengesController < ApplicationController
     if @user.verify_otp(code)
       finish_sign_in
     elsif @user.consume_recovery_code(code)
-        AuditEvent.record("mfa.recovery_code_used", user: @user)
-        UserMailer.recovery_code_used(@user).deliver_later
-        finish_sign_in
+      AuditEvent.record("mfa.recovery_code_used", user: @user)
+      UserMailer.recovery_code_used(@user).deliver_later
+      finish_sign_in
     else
-        AuditEvent.record("mfa.failed", user: @user)
-        @user.register_failed_login!
-        if @user.reload.locked?
-            session.delete(:pending_mfa)
-            redirect_to new_session_path, alert: SessionsController::GENERIC_FAILURE
-        else
-            redirect_to new_two_factor_challenge_path, alert: "Invalid code. Try again."
-        end
+      AuditEvent.record("mfa.failed", user: @user)
+      @user.register_failed_login!
+      if @user.reload.locked?
+        session.delete(:pending_mfa)
+        redirect_to new_session_path, alert: SessionsController::GENERIC_FAILURE
+      else
+        redirect_to new_two_factor_challenge_path, alert: "Invalid code. Try again."
+      end
     end
   end
 

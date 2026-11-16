@@ -1,6 +1,16 @@
-<%# app/views/email_verifications/new.html.erb %>
-<h1>Resend confirmation link</h1>
-<%= form_with url: email_verifications_path do |f| %>
-  <%= f.email_field :email_address, required: true, autocomplete: "username", placeholder: "Email" %>
-  <%= f.submit "Send link" %>
-<% end %>
+<% content_for :title, "Resend confirmation" %>
+
+<div class="card">
+  <h1>Resend confirmation link</h1>
+  <p class="muted">You need to confirm your email before you can sign in.</p>
+
+  <%= form_with url: email_verifications_path, class: "form", id: "resend_verification_form" do |f| %>
+    <div class="field">
+      <%= f.label :email_address, "Email" %>
+      <%= f.email_field :email_address, class: "input", required: true, autofocus: true, autocomplete: "username", placeholder: "you@company.com" %>
+    </div>
+    <%= f.submit "Send link", class: "btn btn--block" %>
+  <% end %>
+
+  <div class="auth-links"><%= link_to "Back to sign in", new_session_path %></div>
+</div>

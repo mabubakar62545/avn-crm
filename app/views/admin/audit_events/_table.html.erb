@@ -1,0 +1,23 @@
+<div class="table-wrap">
+  <table class="table" id="audit_events">
+    <thead>
+      <tr><th>When</th><th>Event</th><th>User</th><th>By</th><th>IP</th><th>Details</th></tr>
+    </thead>
+    <tbody>
+      <% events.each do |e| %>
+        <% details = e.metadata.except("attempted_email") %>
+        <tr id="<%= dom_id(e) %>">
+          <td class="nowrap" title="<%= e.created_at.iso8601 %>"><%= e.created_at.to_fs(:db) %></td>
+          <td><%= badge e.action, audit_tone(e.action) %></td>
+          <td><%= e.user_email || e.metadata["attempted_email"] || "—" %></td>
+          <td><%= e.actor&.email_address || "system" %></td>
+          <td class="nowrap"><%= e.ip_address.presence || "—" %></td>
+          <td class="meta"><%= details.to_json if details.any? %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% if events.none? %>
+    <div class="empty">No events found.</div>
+  <% end %>
+</div>

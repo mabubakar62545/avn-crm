@@ -1,15 +1,28 @@
-<%# app/views/admin/audit_events/index.html.erb %>
-<h1>Audit log</h1>
-<table>
-  <tr><th>When</th><th>Event</th><th>User</th><th>By</th><th>IP</th><th>Details</th></tr>
-  <% @events.each do |e| %>
-    <tr>
-      <td><%= e.created_at.to_fs(:db) %></td>
-      <td><%= e.action %></td>
-      <td><%= e.user_email || e.metadata["attempted_email"] %></td>
-      <td><%= e.actor&.email_address || "system" %></td>
-      <td><%= e.ip_address %></td>
-      <td><%= e.metadata.except("attempted_email").to_json if e.metadata.except("attempted_email").any? %></td>
-    </tr>
+<% content_for :title, "Audit log" %>
+
+<div class="page-header">
+  <div>
+    <h1>Audit log</h1>
+    <p>
+      Most recent 200 security events<%= " for #{@filtered_user.email_address}" if @filtered_user %>.
+    </p>
+  </div>
+</div>
+
+<section class="card" style="margin-bottom:1rem">
+  <%= form_with url: admin_audit_events_path, method: :get, class: "form-row", id: "audit_filter_form", data: { turbo_action: "advance" } do |f| %>
+    <%= f.hidden_field :user_id, value: params[:user_id] if params[:user_id].present? %>
+    <div class="field">
+      <%= f.label :event, "Event type" %>
+      <%= f.select :event, options_for_select(@actions, params[:event]), { include_blank: "All events" }, class: "input" %>
+    </div>
+    <%= f.submit "Filter", class: "btn", name: nil %>
+    <% if params[:event].present? || params[:user_id].present? %>
+      <%= link_to "Clear filters", admin_audit_events_path, class: "btn btn--ghost" %>
+    <% end %>
   <% end %>
-</table>
+</section>
+
+<section class="card card--flush">
+  <%= render "table", events: @events %>
+</section>

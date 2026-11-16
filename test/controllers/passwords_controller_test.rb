@@ -1,7 +1,7 @@
 require "test_helper"
 
 class PasswordsControllerTest < ActionDispatch::IntegrationTest
-  setup { @user = User.take }
+  setup { @user = users(:member) }
 
   test "new" do
     get new_password_path
@@ -14,7 +14,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
 
     follow_redirect!
-    assert_notice "reset instructions sent"
+    assert_flash "reset instructions sent"
   end
 
   test "create for an unknown user redirects but sends no mail" do
@@ -23,7 +23,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
 
     follow_redirect!
-    assert_notice "reset instructions sent"
+    assert_flash "reset instructions sent"
   end
 
   test "edit" do
@@ -36,32 +36,41 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_password_path
 
     follow_redirect!
-    assert_notice "reset link is invalid"
+    assert_flash "reset link is invalid"
   end
 
-  test "update" do
+  test "update changes the password, unlocks, and signs out everywhere" do
+    @user.sessions.create!
+    @user.update_columns(locked_until: 1.hour.from_now)
+
     assert_changes -> { @user.reload.password_digest } do
-      put password_path(@user.password_reset_token), params: { password: "new", password_confirmation: "new" }
+      put password_path(@user.password_reset_token), params: { password: "brand-new-secret-1", password_confirmation: "brand-new-secret-1" }
       assert_redirected_to new_session_path
     end
 
+    assert_not @user.reload.locked?
+    assert_empty @user.sessions
+
     follow_redirect!
-    assert_notice "Password has been reset"
+    assert_flash "Password has been reset"
   end
 
   test "update with non matching passwords" do
     token = @user.password_reset_token
     assert_no_changes -> { @user.reload.password_digest } do
-      put password_path(token), params: { password: "no", password_confirmation: "match" }
+      put password_path(token), params: { password: "brand-new-secret-1", password_confirmation: "something-else-1" }
       assert_redirected_to edit_password_path(token)
     end
 
     follow_redirect!
-    assert_notice "Passwords did not match"
+    assert_flash "Password confirmation doesn't match"
   end
 
-  private
-    def assert_notice(text)
-      assert_select "div", /#{text}/
-    end
+  test "update with a too-short password" do
+    token = @user.password_reset_token
+    put password_path(token), params: { password: "short", password_confirmation: "short" }
+
+    follow_redirect!
+    assert_flash "too short"
+  end
 end

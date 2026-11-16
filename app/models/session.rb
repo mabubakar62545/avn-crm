@@ -1,10 +1,11 @@
-# app/models/session.rb
 class Session < ApplicationRecord
   IDLE_TIMEOUT     = 2.hours
   ABSOLUTE_TIMEOUT = 2.weeks
   ACTIVITY_THROTTLE = 1.minute
 
   belongs_to :user
+
+  attribute :last_active_at, :datetime, default: -> { Time.current }
 
   scope :expired, -> {
     where(last_active_at: ...IDLE_TIMEOUT.ago).or(where(created_at: ...ABSOLUTE_TIMEOUT.ago))

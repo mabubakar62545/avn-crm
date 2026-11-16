@@ -1,9 +1,35 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
+# Idempotent: safe to run any number of times (`bin/rails db:seed`).
 #
-# Example:
+# In development and test this creates one verified account per role so every
+# screen can be exercised without going through email confirmation:
 #
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+#   admin@avn-crm.test    / TestPassword123!   (admin: users, roles, audit log)
+#   manager@avn-crm.test  / TestPassword123!   (manager: read-only user list)
+#   member@avn-crm.test   / TestPassword123!   (member: own account only)
+#   locked@avn-crm.test   / TestPassword123!   (locked out, to test "Unlock")
+#   pending@avn-crm.test  / TestPassword123!   (email not confirmed yet)
+
+if Rails.env.local?
+  password = "TestPassword123!"
+
+  demo_users = [
+    { email_address: "admin@avn-crm.test",   role: "admin" },
+    { email_address: "manager@avn-crm.test", role: "manager" },
+    { email_address: "member@avn-crm.test",  role: "member" },
+    { email_address: "locked@avn-crm.test",  role: "member", locked_until: 1.day.from_now, failed_login_attempts: 0 },
+    { email_address: "pending@avn-crm.test", role: "member", verified_at: nil }
+  ]
+
+  demo_users.each do |attrs|
+    User.find_or_create_by!(email_address: attrs[:email_address]) do |user|
+      user.password = password
+      user.role = attrs[:role]
+      user.verified_at = attrs.fetch(:verified_at, Time.current)
+    end.tap do |user|
+      # update_columns: lock state is cleared by a before_save on password change
+      user.update_columns(locked_until: attrs[:locked_until]) if attrs.key?(:locked_until)
+    end
+  end
+
+  puts "Seeded #{demo_users.size} demo users (password: #{password})" unless Rails.env.test?
+end

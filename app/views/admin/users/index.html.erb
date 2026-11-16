@@ -1,15 +1,31 @@
-<%# app/views/admin/users/index.html.erb %>
-<h1>Users</h1>
-<table>
-  <tr><th>Email</th><th>Role</th><th>Verified</th><th>MFA</th><th>Status</th><th>Devices</th></tr>
-  <% @users.each do |u| %>
-    <tr>
-      <td><%= link_to u.email_address, admin_user_path(u) %></td>
-      <td><%= u.role %></td>
-      <td><%= u.verified? ? "Yes" : "No" %></td>
-      <td><%= u.otp_enabled? ? "On" : "Off" %></td>
-      <td><%= u.locked? ? "Locked" : "Active" %></td>
-      <td><%= u.sessions.size %></td>
-    </tr>
-  <% end %>
-</table>
+<% content_for :title, "Users" %>
+
+<div class="page-header">
+  <div>
+    <h1>Users</h1>
+    <p><%= pluralize(@users.size, "user") %></p>
+  </div>
+</div>
+
+<section class="card card--flush">
+  <div class="table-wrap">
+    <table class="table" id="users">
+      <thead>
+        <tr><th>Email</th><th>Role</th><th>Verified</th><th>Two-factor</th><th>Status</th><th>Devices</th><th>Joined</th></tr>
+      </thead>
+      <tbody>
+        <% @users.each do |u| %>
+          <tr id="<%= dom_id(u) %>">
+            <td><%= link_to u.email_address, admin_user_path(u) %><%= " (you)" if u == Current.user %></td>
+            <td><%= role_badge(u) %></td>
+            <td><%= yes_no_badge(u.verified?) %></td>
+            <td><%= yes_no_badge(u.otp_enabled?, yes: "On", no: "Off") %></td>
+            <td><%= status_badge(u) %></td>
+            <td><%= u.sessions.size %></td>
+            <td class="nowrap"><%= u.created_at.to_date.to_fs(:short) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

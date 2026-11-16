@@ -1,3 +1,7 @@
-<%# app/views/email_verifications/show.html.erb %>
-<h1>Confirm your email</h1>
-<%= button_to "Confirm my email", email_verification_path(params[:token]), method: :patch %>
+<% content_for :title, "Confirm your email" %>
+
+<div class="card text-center">
+  <h1>Confirm your email</h1>
+  <p class="muted">Confirming <strong><%= @user.email_address %></strong>.</p>
+  <%= button_to "Confirm my email", email_verification_path(params[:token]), method: :patch, class: "btn btn--block" %>
+</div>

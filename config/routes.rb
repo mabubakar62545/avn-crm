@@ -9,7 +9,7 @@ Rails.application.routes.draw do
   # Account management
   namespace :account do
     resource :two_factor, only: %i[new create destroy]
-  
+
     resources :sessions, only: %i[index destroy] do
       delete :others, on: :collection
     end
@@ -27,5 +27,5 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
 
-  root "account/sessions#index"   # temporary until you build a dashboard
+  root "dashboards#show"
 end

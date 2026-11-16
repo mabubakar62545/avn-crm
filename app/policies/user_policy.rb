@@ -1,4 +1,3 @@
-# app/policies/user_policy.rb
 class UserPolicy < ApplicationPolicy
   def index?           = user.at_least?(:manager)
   def show?            = index?

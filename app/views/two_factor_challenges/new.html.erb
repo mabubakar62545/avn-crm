@@ -1,7 +1,16 @@
-<h1>Two-factor authentication</h1>
-<p>Enter the 6-digit code from your authenticator app, or one of your recovery codes.</p>
-<%= form_with url: two_factor_challenge_path do |f| %>
-  <%= f.text_field :code, required: true, autocomplete: "one-time-code", autofocus: true, maxlength: 11 %>
-  <%= f.submit "Verify" %>
-<% end %>
-<%= link_to "Cancel", new_session_path %>
+<% content_for :title, "Two-factor authentication" %>
+
+<div class="card">
+  <h1>Two-factor authentication</h1>
+  <p class="muted">Enter the 6-digit code from your authenticator app, or one of your recovery codes.</p>
+
+  <%= form_with url: two_factor_challenge_path, class: "form", id: "two_factor_challenge_form" do |f| %>
+    <div class="field">
+      <%= f.label :code, "Authentication code" %>
+      <%= f.text_field :code, class: "input input--code", required: true, autocomplete: "one-time-code", autofocus: true, maxlength: 11, placeholder: "123456" %>
+    </div>
+    <%= f.submit "Verify", class: "btn btn--block" %>
+  <% end %>
+
+  <div class="auth-links"><%= link_to "Cancel and sign in again", new_session_path %></div>
+</div>

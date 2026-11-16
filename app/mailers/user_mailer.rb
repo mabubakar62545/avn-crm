@@ -1,4 +1,3 @@
-# app/mailers/user_mailer.rb
 class UserMailer < ApplicationMailer
   def email_verification(user)
     @token = user.generate_token_for(:email_verification)
@@ -22,5 +21,3 @@ class UserMailer < ApplicationMailer
     mail to: user.email_address, subject: "Two-factor authentication was turned off"
   end
 end
-
-

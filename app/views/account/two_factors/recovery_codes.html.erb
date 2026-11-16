@@ -1,5 +1,16 @@
-<%# app/views/account/two_factors/recovery_codes.html.erb %>
-<h1>Save your recovery codes</h1>
-<p><strong>This is the only time you'll see these.</strong> Each code works once if you lose your phone.</p>
-<pre><%= @recovery_codes.join("\n") %></pre>
-<p><%= link_to "I've saved them, continue", account_sessions_path %></p>
+<% content_for :title, "Recovery codes" %>
+
+<div class="card" style="max-width:560px">
+  <h1>Save your recovery codes</h1>
+  <div class="flash flash--notice">Two-factor authentication is now on.</div>
+  <p><strong>This is the only time you'll see these codes.</strong> Each one works once if you lose access to your authenticator app.
+    Store them somewhere safe, like a password manager.</p>
+
+  <ul class="codes" id="recovery_codes">
+    <% @recovery_codes.each do |code| %>
+      <li><%= code %></li>
+    <% end %>
+  </ul>
+
+  <%= link_to "I've saved them, continue", account_sessions_path, class: "btn" %>
+</div>

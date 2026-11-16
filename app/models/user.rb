@@ -1,4 +1,3 @@
-# app/models/user.rb
 class User < ApplicationRecord
   has_secure_password
   has_many :sessions, dependent: :destroy
@@ -27,13 +26,10 @@ class User < ApplicationRecord
 
   enum :role, ROLES.index_by(&:itself), default: "member", validate: true
 
-
-
   after_update_commit :revoke_other_sessions, if: :saved_change_to_password_digest?
   before_save :clear_lockout, if: :will_save_change_to_password_digest?
   after_create_commit  :audit_registration
   after_update_commit  :audit_security_changes
-
 
   generates_token_for :email_verification, expires_in: 2.days do
     email_address

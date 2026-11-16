@@ -1,5 +1,5 @@
-# app/controllers/email_verifications_controller.rb
 class EmailVerificationsController < ApplicationController
+  skip_authorization_checks
   allow_unauthenticated_access
   rate_limit to: 5, within: 10.minutes, only: :create,
              with: -> { redirect_to new_email_verification_path, alert: "Try again later." }
