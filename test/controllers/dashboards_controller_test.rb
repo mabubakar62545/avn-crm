@@ -7,7 +7,7 @@ class DashboardsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "shows the dashboard" do
-    sign_in_as users(:member)
+    sign_in_as users(:client)
     get root_path
 
     assert_response :success

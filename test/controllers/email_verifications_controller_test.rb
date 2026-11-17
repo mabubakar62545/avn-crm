@@ -15,7 +15,7 @@ class EmailVerificationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create sends nothing to already verified users" do
-    post email_verifications_path, params: { email_address: users(:member).email_address }
+    post email_verifications_path, params: { email_address: users(:client).email_address }
     assert_enqueued_emails 0
   end
 

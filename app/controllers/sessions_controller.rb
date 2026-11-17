@@ -23,8 +23,7 @@ class SessionsController < ApplicationController
     elsif !user.verified?
       redirect_to new_email_verification_path, alert: "Please confirm your email first."
     elsif user.otp_enabled?
-      session[:pending_mfa] = { "user_id" => user.id, "expires_at" => 5.minutes.from_now.to_i }
-      redirect_to new_two_factor_challenge_path
+      start_two_factor_challenge user
     else
       complete_sign_in user
     end

@@ -1,7 +1,7 @@
 require "test_helper"
 
 class PasswordsControllerTest < ActionDispatch::IntegrationTest
-  setup { @user = users(:member) }
+  setup { @user = users(:client) }
 
   test "new" do
     get new_password_path

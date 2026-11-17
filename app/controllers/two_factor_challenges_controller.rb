@@ -40,7 +40,7 @@ class TwoFactorChallengesController < ApplicationController
     end
 
     def finish_sign_in
-      session.delete(:pending_mfa)
-      complete_sign_in @user
+      pending = session.delete(:pending_mfa)
+      complete_sign_in @user, via: pending["via"] || "password"
     end
 end

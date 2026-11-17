@@ -1,0 +1,5 @@
+<p>Hi,</p>
+<p><%= @user.invited_by ? "#{@user.invited_by.email_address} has invited you" : "You've been invited" %> to join AVN CRM as <strong><%= @user.role.capitalize %></strong>.</p>
+<p><%= link_to "Accept invitation", invitation_url(@token) %></p>
+<p>You can set a password, or continue with the Google account for <%= @user.email_address %>.
+  This link expires in <%= User::INVITATION_TTL.inspect %>. If you weren't expecting this, you can ignore this email.</p>

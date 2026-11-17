@@ -4,6 +4,12 @@ class UserMailer < ApplicationMailer
     mail to: user.email_address, subject: "Confirm your email address"
   end
 
+  def invitation(user)
+    @user  = user
+    @token = user.generate_token_for(:invitation)
+    mail to: user.email_address, subject: "You've been invited to AVN CRM"
+  end
+
   def already_registered(user)
     mail to: user.email_address, subject: "Someone tried to sign up with your email"
   end

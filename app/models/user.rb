@@ -4,6 +4,8 @@ class User < ApplicationRecord
 
   encrypts :otp_secret
   has_many :recovery_codes, dependent: :delete_all
+  has_many :identities, dependent: :destroy
+  belongs_to :invited_by, class_name: "User", optional: true
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
@@ -22,18 +24,73 @@ class User < ApplicationRecord
   OTP_ISSUER = "AVN CRM"
   RECOVERY_CODE_COUNT = 10
 
-  ROLES = %w[member manager admin].freeze   # ordered lowest → highest
+  # client: signs up themselves (password or Google).
+  # manager (employee) and admin: only created from the console or by an admin invitation.
+  ROLES = %w[client manager admin].freeze   # ordered lowest → highest
+  INVITATION_TTL = 7.days
 
-  enum :role, ROLES.index_by(&:itself), default: "member", validate: true
+  enum :role, ROLES.index_by(&:itself), default: "client", validate: true
 
   after_update_commit :revoke_other_sessions, if: :saved_change_to_password_digest?
   before_save :clear_lockout, if: :will_save_change_to_password_digest?
-  after_create_commit  :audit_registration
+  before_save :stamp_password_set_at, if: :will_save_change_to_password_digest?
+  after_create_commit  :audit_registration, unless: :invited_at?
   after_update_commit  :audit_security_changes
 
   generates_token_for :email_verification, expires_in: 2.days do
     email_address
   end
+
+  # Resending bumps invited_at and accepting sets verified_at, so either kills older links.
+  generates_token_for :invitation, expires_in: INVITATION_TTL do
+    [ invited_at&.to_i, verified_at&.to_i, password_set_at&.to_i ]
+  end
+
+  # Company email domains (config.x.staff_domains). Addresses on these domains
+  # can't self-register: staff accounts come from an invitation.
+  def self.staff_email?(email)
+    domain = email.to_s.strip.downcase.split("@").last
+    domain.present? && Array(Rails.configuration.x.staff_domains).include?(domain)
+  end
+
+  # Creates an account and emails the person a link to finish setting it up.
+  # Console: User.invite!(email_address: "jane@yourcompany.com", role: "manager")
+  def self.invite!(email_address:, role:, invited_by: nil)
+    user = new(email_address:, role:, invited_by:, invited_at: Time.current)
+    user.assign_unusable_password
+    user.save!
+    UserMailer.invitation(user).deliver_later
+    AuditEvent.record("user.invited", user:, actor: invited_by, role: user.role, via: invited_by ? "admin" : "console")
+    user
+  end
+
+  def invitation_pending? = invited_at.present? && !verified?
+  def invitation_expired? = invitation_pending? && invited_at < INVITATION_TTL.ago
+
+  def resend_invitation!
+    update!(invited_at: Time.current)
+    UserMailer.invitation(self).deliver_later
+  end
+
+  def accept_invitation(password:, password_confirmation:)
+    if password.blank?
+      errors.add(:password, :blank)
+      return false
+    end
+    update(password:, password_confirmation:, verified_at: Time.current)
+  end
+
+  # Gives SSO-provisioned accounts an unusable password the user never sees.
+  # The account stays "password not set" until they choose one via reset.
+  def assign_unusable_password
+    @unusable_password = true
+    self.password = SecureRandom.base58(32)
+  end
+
+  def password_set? = password_set_at.present?
+
+  # The user must keep at least one way to sign in.
+  def can_unlink_identity? = password_set? || identities.count > 1
 
   def verified? = verified_at.present?
   def verify!   = update!(verified_at: Time.current)
@@ -114,6 +171,11 @@ class User < ApplicationRecord
       update_columns(locked_until: LOCKOUT_DURATION.from_now, failed_login_attempts: 0)
       AuditEvent.record("account.locked", user: self)
       UserMailer.account_locked(self).deliver_later
+    end
+
+    def stamp_password_set_at
+      self.password_set_at = @unusable_password ? nil : Time.current
+      @unusable_password = false
     end
 
     def clear_lockout

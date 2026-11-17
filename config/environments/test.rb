@@ -55,4 +55,9 @@ Rails.application.configure do
   config.active_record.encryption.primary_key = "test-primary-key-0000000000000000"
   config.active_record.encryption.deterministic_key = "test-deterministic-key-000000000"
   config.active_record.encryption.key_derivation_salt = "test-key-derivation-salt-0000000"
+
+  # SSO settings for tests, so they don't depend on the encrypted credentials
+  # (CI has no master key). OmniAuth test mode means these never reach Google.
+  config.x.sso = { google: { client_id: "test-client", client_secret: "test-secret" } }
+  config.x.staff_domains = %w[avn.example]
 end

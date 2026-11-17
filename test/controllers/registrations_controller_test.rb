@@ -14,13 +14,13 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
 
     user = User.find_by!(email_address: "new@example.com")
     assert_not user.verified?
-    assert_equal "member", user.role
+    assert_equal "client", user.role
     assert_enqueued_email_with UserMailer, :email_verification, args: [ user ]
     assert_redirected_to new_session_path
   end
 
   test "create with an existing email does not reveal it and notifies the owner" do
-    existing = users(:member)
+    existing = users(:client)
 
     assert_no_difference -> { User.count } do
       post registration_path, params: { user: { email_address: existing.email_address, password: "a-long-secret-123", password_confirmation: "a-long-secret-123" } }
@@ -35,5 +35,18 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_select "#form_errors li", minimum: 1
+  end
+
+  test "a staff-domain email cannot self-register" do
+    assert_no_difference -> { User.count } do
+      post registration_path, params: { user: { email_address: "jane@avn.example", password: "a-long-secret-123", password_confirmation: "a-long-secret-123" } }
+    end
+    assert_response :unprocessable_entity
+    assert_select "#form_errors li", /created by invitation/
+  end
+
+  test "a role sent in the form is ignored" do
+    post registration_path, params: { user: { email_address: "sneaky@example.com", password: "a-long-secret-123", password_confirmation: "a-long-secret-123", role: "admin" } }
+    assert_equal "client", User.find_by!(email_address: "sneaky@example.com").role
   end
 end

@@ -2,7 +2,7 @@ require "test_helper"
 
 class TwoFactorChallengesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:member)
+    @user = users(:client)
     @secret, @codes = enable_two_factor(@user)
   end
 

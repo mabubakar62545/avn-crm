@@ -2,7 +2,7 @@ require "test_helper"
 
 class Account::TwoFactorsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:member)
+    @user = users(:client)
     sign_in_as @user
   end
 
@@ -48,5 +48,21 @@ class Account::TwoFactorsControllerTest < ActionDispatch::IntegrationTest
     delete account_two_factor_path, params: { password: PASSWORD, code: current_otp(secret) }
     assert_not @user.reload.otp_enabled?
     assert_enqueued_email_with UserMailer, :two_factor_disabled, args: [ @user ]
+  end
+
+  test "a Google-only user turns off 2FA with just a code" do
+    sign_out
+    user = users(:sso_only)
+    sign_in_as user
+    secret, = enable_two_factor(user)
+
+    get account_sessions_path
+    assert_select "#disable_two_factor_form input[name=password]", 0
+
+    delete account_two_factor_path, params: { code: "000000" }
+    assert user.reload.otp_enabled?
+
+    delete account_two_factor_path, params: { code: current_otp(secret) }
+    assert_not user.reload.otp_enabled?
   end
 end

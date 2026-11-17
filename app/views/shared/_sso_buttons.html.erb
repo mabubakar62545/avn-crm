@@ -1,0 +1,6 @@
+<%# locals: (action: "Sign in") -%>
+<% if sso_provider_enabled?(:google) %>
+  <div class="auth-divider"><span>or</span></div>
+  <%= button_to "#{action} with Google", "/auth/google", method: :post,
+                class: "btn btn--secondary btn--block", form_class: "sso-form", data: { turbo: false } %>
+<% end %>

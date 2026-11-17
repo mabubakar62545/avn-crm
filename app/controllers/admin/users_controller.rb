@@ -30,6 +30,12 @@ class Admin::UsersController < ApplicationController
     redirect_to admin_user_path(@user), notice: "Signed out of all devices.", status: :see_other
   end
 
+  def resend_invitation
+    @user.resend_invitation!
+    AuditEvent.record("user.invitation_resent", user: @user)
+    redirect_to admin_user_path(@user), notice: "Invitation re-sent to #{@user.email_address}.", status: :see_other
+  end
+
   private
     def set_user
       @user = authorize policy_scope(User).find(params[:id])

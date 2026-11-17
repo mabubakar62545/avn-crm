@@ -2,7 +2,7 @@ require "test_helper"
 
 class Account::SessionsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:member)
+    @user = users(:client)
     sign_in_as @user
     @current = Current.session
   end

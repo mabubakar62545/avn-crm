@@ -7,6 +7,24 @@
   </div>
 </div>
 
+<% if policy(User).invite? %>
+  <section class="card" style="margin-bottom:1rem">
+    <div class="card__title"><h2>Invite someone</h2></div>
+    <p class="muted">Employees and admins can only join by invitation. They get an email link to set a password or continue with Google.</p>
+    <%= form_with scope: :invitation, url: admin_invitations_path, class: "form-row", id: "invite_user_form" do |f| %>
+      <div class="field">
+        <%= f.label :email_address, "Email" %>
+        <%= f.email_field :email_address, class: "input", required: true, placeholder: "name@company.com" %>
+      </div>
+      <div class="field">
+        <%= f.label :role %>
+        <%= f.select :role, User::ROLES.reverse.map { |r| [ r.capitalize, r ] }, { selected: "manager" }, class: "input" %>
+      </div>
+      <%= f.submit "Send invitation", class: "btn" %>
+    <% end %>
+  </section>
+<% end %>
+
 <section class="card card--flush">
   <div class="table-wrap">
     <table class="table" id="users">

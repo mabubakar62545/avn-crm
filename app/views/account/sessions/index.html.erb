@@ -62,10 +62,12 @@
 
       <h3 class="label">Turn off two-factor</h3>
       <%= form_with url: account_two_factor_path, method: :delete, class: "form-row", id: "disable_two_factor_form" do |f| %>
-        <div class="field">
-          <%= f.label :password, "Current password" %>
-          <%= f.password_field :password, class: "input", required: true, autocomplete: "current-password" %>
-        </div>
+        <% if Current.user.password_set? %>
+          <div class="field">
+            <%= f.label :password, "Current password" %>
+            <%= f.password_field :password, class: "input", required: true, autocomplete: "current-password" %>
+          </div>
+        <% end %>
         <div class="field">
           <%= f.label :code, "Authenticator or recovery code" %>
           <%= f.text_field :code, class: "input", required: true, autocomplete: "one-time-code", maxlength: 11 %>
@@ -78,9 +80,43 @@
     <% end %>
   </section>
 
+  <section class="card" id="sign_in_methods">
+    <div class="card__title"><h2>Sign-in methods</h2></div>
+    <p>Link your Google account to sign in with one click next time.</p>
+
+    <% google = Current.user.identities.find_by(provider: "google") %>
+    <div class="row row--between">
+      <div>
+        <strong>Google</strong>
+        <div class="muted small">
+          <% if google %>
+            Linked<%= " as #{google.email}" if google.email.present? %>
+            <%= "· last used #{time_ago_in_words(google.last_used_at)} ago" if google.last_used_at %>
+          <% else %>
+            Not linked
+          <% end %>
+        </div>
+      </div>
+      <% if google && Current.user.can_unlink_identity? %>
+        <%= button_to "Unlink", account_identity_path(google), method: :delete, class: "btn btn--ghost btn--sm" %>
+      <% elsif google %>
+        <span class="muted small" id="unlink_blocked">Set a password before you can unlink Google.</span>
+      <% elsif sso_provider_enabled?(:google) %>
+        <%= button_to "Link Google account", "/auth/google", method: :post, class: "btn btn--sm", data: { turbo: false } %>
+      <% else %>
+        <span class="muted small">Not available</span>
+      <% end %>
+    </div>
+  </section>
+
   <section class="card">
     <div class="card__title"><h2>Password</h2></div>
-    <p class="mb-0">To change your password, sign out and use
-      <%= link_to "Forgot password", new_password_path %>. Changing it signs you out on all other devices.</p>
+    <% if Current.user.password_set? %>
+      <p class="mb-0">To change your password, sign out and use
+        <%= link_to "Forgot password", new_password_path %>. Changing it signs you out on all other devices.</p>
+    <% else %>
+      <p class="mb-0" id="password_not_set">You sign in with Google, so you don't have a password yet.
+        To add one as a backup, <%= link_to "set a password", new_password_path(email_address: Current.user.email_address) %> — we'll email you a link.</p>
+    <% end %>
   </section>
 </div>

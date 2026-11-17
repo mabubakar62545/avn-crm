@@ -5,7 +5,7 @@
 #
 #   admin@avn-crm.test    / TestPassword123!   (admin: users, roles, audit log)
 #   manager@avn-crm.test  / TestPassword123!   (manager: read-only user list)
-#   member@avn-crm.test   / TestPassword123!   (member: own account only)
+#   client@avn-crm.test   / TestPassword123!   (client: own account only)
 #   locked@avn-crm.test   / TestPassword123!   (locked out, to test "Unlock")
 #   pending@avn-crm.test  / TestPassword123!   (email not confirmed yet)
 
@@ -14,10 +14,11 @@ if Rails.env.local?
 
   demo_users = [
     { email_address: "admin@avn-crm.test",   role: "admin" },
+    { email_address: "mmabubakar850@gmail.com",   role: "admin" },
     { email_address: "manager@avn-crm.test", role: "manager" },
-    { email_address: "member@avn-crm.test",  role: "member" },
-    { email_address: "locked@avn-crm.test",  role: "member", locked_until: 1.day.from_now, failed_login_attempts: 0 },
-    { email_address: "pending@avn-crm.test", role: "member", verified_at: nil }
+    { email_address: "client@avn-crm.test",  role: "client" },
+    { email_address: "locked@avn-crm.test",  role: "client", locked_until: 1.day.from_now, failed_login_attempts: 0 },
+    { email_address: "pending@avn-crm.test", role: "client", verified_at: nil }
   ]
 
   demo_users.each do |attrs|

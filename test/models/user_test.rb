@@ -15,17 +15,17 @@ class UserTest < ActiveSupport::TestCase
   test "role ranking" do
     assert users(:admin).at_least?(:manager)
     assert users(:manager).at_least?(:manager)
-    assert_not users(:member).at_least?(:manager)
+    assert_not users(:client).at_least?(:manager)
   end
 
   test "locks after too many failed logins" do
-    user = users(:member)
+    user = users(:client)
     User::MAX_FAILED_LOGINS.times { user.register_failed_login! }
     assert user.locked?
   end
 
   test "an authenticator code can only be used once" do
-    user = users(:member)
+    user = users(:client)
     secret = ROTP::Base32.random
     user.enable_otp!(secret)
     code = ROTP::TOTP.new(secret).now
@@ -35,7 +35,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "recovery codes are single use and stored hashed" do
-    user = users(:member)
+    user = users(:client)
     codes = user.enable_otp!(ROTP::Base32.random)
 
     assert_equal User::RECOVERY_CODE_COUNT, codes.size
@@ -45,7 +45,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "the otp secret is encrypted at rest" do
-    user = users(:member)
+    user = users(:client)
     secret = ROTP::Base32.random
     user.enable_otp!(secret)
 

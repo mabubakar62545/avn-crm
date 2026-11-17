@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_123732) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_100000) do
   create_table "audit_events", force: :cascade do |t|
     t.bigint "actor_id"
     t.bigint "user_id"
@@ -24,6 +24,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_123732) do
     t.index ["action", "created_at"], name: "index_audit_events_on_action_and_created_at"
     t.index ["actor_id", "created_at"], name: "index_audit_events_on_actor_id_and_created_at"
     t.index ["user_id", "created_at"], name: "index_audit_events_on_user_id_and_created_at"
+  end
+
+  create_table "identities", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "provider", null: false
+    t.string "uid", null: false
+    t.string "email"
+    t.datetime "last_used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "uid"], name: "index_identities_on_provider_and_uid", unique: true
+    t.index ["user_id", "provider"], name: "index_identities_on_user_id_and_provider", unique: true
+    t.index ["user_id"], name: "index_identities_on_user_id"
   end
 
   create_table "recovery_codes", force: :cascade do |t|
@@ -58,11 +71,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_123732) do
     t.string "otp_secret"
     t.datetime "otp_enabled_at"
     t.integer "otp_last_used_at"
-    t.string "role", default: "member", null: false
+    t.string "role", default: "client", null: false
+    t.datetime "password_set_at"
+    t.datetime "invited_at"
+    t.integer "invited_by_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
-    t.check_constraint "role IN ('member', 'manager', 'admin')", name: "users_role_check"
+    t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
+    t.check_constraint "role IN ('client', 'manager', 'admin')", name: "users_role_check"
   end
 
+  add_foreign_key "identities", "users"
   add_foreign_key "recovery_codes", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "users", "users", column: "invited_by_id", on_delete: :nullify
 end

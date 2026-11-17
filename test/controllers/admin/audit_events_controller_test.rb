@@ -2,7 +2,7 @@ require "test_helper"
 
 class Admin::AuditEventsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    AuditEvent.record("login.failed", user: users(:member), attempted_email: users(:member).email_address)
+    AuditEvent.record("login.failed", user: users(:client), attempted_email: users(:client).email_address)
     AuditEvent.record("user.registered", user: users(:manager))
   end
 
@@ -20,12 +20,12 @@ class Admin::AuditEventsControllerTest < ActionDispatch::IntegrationTest
     get admin_audit_events_path(event: "user.registered")
     assert_select "#audit_events tbody tr", 1
 
-    get admin_audit_events_path(user_id: users(:member).id)
+    get admin_audit_events_path(user_id: users(:client).id)
     assert_select "#audit_events tbody tr", 1
   end
 
-  test "managers and members are refused" do
-    [ :manager, :member ].each do |name|
+  test "managers and clients are refused" do
+    [ :manager, :client ].each do |name|
       sign_in_as users(name)
       get admin_audit_events_path
       assert_redirected_to root_path

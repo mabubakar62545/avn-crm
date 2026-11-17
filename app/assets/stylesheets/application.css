@@ -142,6 +142,9 @@ dl.details dd { margin: 0; overflow-wrap: anywhere; }
 .field { display: flex; flex-direction: column; gap: .35rem; }
 .field label, .label { font-weight: 600; font-size: .9rem; }
 .hint { color: var(--text-muted); font-size: .82rem; }
+.auth-divider { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: var(--text-muted); font-size: .82rem; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
+.sso-form { margin: 0; }
 
 .input, select.input {
   width: 100%; padding: .6rem .75rem;

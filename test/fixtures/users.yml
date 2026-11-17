@@ -3,29 +3,40 @@
 admin:
   email_address: admin@example.com
   password_digest: <%= password_digest %>
+  password_set_at: <%= 1.week.ago.to_fs(:db) %>
   role: admin
   verified_at: <%= 1.week.ago.to_fs(:db) %>
 
 manager:
   email_address: manager@example.com
   password_digest: <%= password_digest %>
+  password_set_at: <%= 1.week.ago.to_fs(:db) %>
   role: manager
   verified_at: <%= 1.week.ago.to_fs(:db) %>
 
-member:
-  email_address: member@example.com
+client:
+  email_address: client@example.com
   password_digest: <%= password_digest %>
-  role: member
+  password_set_at: <%= 1.week.ago.to_fs(:db) %>
+  role: client
   verified_at: <%= 1.week.ago.to_fs(:db) %>
 
 unverified:
   email_address: unverified@example.com
   password_digest: <%= password_digest %>
-  role: member
+  password_set_at: <%= 1.week.ago.to_fs(:db) %>
+  role: client
 
 locked:
   email_address: locked@example.com
   password_digest: <%= password_digest %>
-  role: member
+  password_set_at: <%= 1.week.ago.to_fs(:db) %>
+  role: client
   verified_at: <%= 1.week.ago.to_fs(:db) %>
   locked_until: <%= 1.hour.from_now.to_fs(:db) %>
+
+sso_only:
+  email_address: sso@example.com
+  password_digest: <%= BCrypt::Password.create(SecureRandom.base58(32)) %>
+  role: client
+  verified_at: <%= 1.week.ago.to_fs(:db) %>

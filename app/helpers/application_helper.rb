@@ -1,4 +1,9 @@
 module ApplicationHelper
+  # SSO providers that are configured (see config/initializers/omniauth.rb).
+  def sso_provider_enabled?(provider)
+    Rails.configuration.x.sso[provider.to_sym].present?
+  end
+
   # Top-nav link that is highlighted when it points at the current page
   # (or, with `prefix: true`, any page beneath it).
   def nav_link_to(name, path, prefix: false)
@@ -11,11 +16,15 @@ module ApplicationHelper
   end
 
   def role_badge(user)
-    badge user.role.capitalize, { "admin" => :danger, "manager" => :info, "member" => :neutral }.fetch(user.role, :neutral)
+    badge user.role.capitalize, { "admin" => :danger, "manager" => :info, "client" => :neutral }.fetch(user.role, :neutral)
   end
 
   def status_badge(user)
-    user.locked? ? badge("Locked", :danger) : badge("Active", :success)
+    if user.locked? then badge("Locked", :danger)
+    elsif user.invitation_expired? then badge("Invite expired", :danger)
+    elsif user.invitation_pending? then badge("Invited", :warning)
+    else badge("Active", :success)
+    end
   end
 
   def yes_no_badge(value, yes: "Yes", no: "No")
@@ -51,7 +60,7 @@ module ApplicationHelper
 
   def audit_tone(action)
     case action
-    when /succeeded|verified|enabled|unlocked/   then :success
+    when /succeeded|verified|enabled|unlocked|accepted/  then :success
     when /failed|blocked|locked|disabled|revoked/ then :danger
     when /changed|requested|recovery/            then :warning
     else :neutral

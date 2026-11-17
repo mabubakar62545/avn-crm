@@ -9,9 +9,12 @@ class RegistrationsController < ApplicationController
   end
 
   def create
-    @user = User.new(registration_params)
+    @user = User.new(registration_params.merge(role: "client"))
 
-    if (existing = User.find_by(email_address: @user.email_address))
+    if User.staff_email?(@user.email_address)
+      @user.errors.add(:base, SsoSignIn::STAFF_BY_INVITATION)
+      render :new, status: :unprocessable_entity
+    elsif (existing = User.find_by(email_address: @user.email_address))
       UserMailer.already_registered(existing).deliver_later
       redirect_to new_session_path, notice: check_email_notice
     elsif @user.save

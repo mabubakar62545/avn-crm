@@ -4,6 +4,8 @@ class UserPolicy < ApplicationPolicy
   def update?          = user.admin? && !self?
   def unlock?          = user.admin?
   def revoke_sessions? = user.admin?
+  def invite?            = user.admin?
+  def resend_invitation? = user.admin? && record.invitation_pending?
 
   def permitted_attributes = update? ? %i[role] : []
 

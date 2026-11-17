@@ -50,10 +50,16 @@ module Authentication
       session.delete(:return_to_after_authenticating) || root_url
     end
 
-    def complete_sign_in(user)
+    # Hands off to the two-factor challenge; it calls complete_sign_in once the code checks out.
+    def start_two_factor_challenge(user, via: "password")
+      session[:pending_mfa] = { "user_id" => user.id, "via" => via, "expires_at" => 5.minutes.from_now.to_i }
+      redirect_to new_two_factor_challenge_path
+    end
+
+    def complete_sign_in(user, via: "password")
       user.reset_failed_logins!
       start_new_session_for user
-      AuditEvent.record("login.succeeded", user:, mfa: user.otp_enabled?)
+      AuditEvent.record("login.succeeded", user:, via:, mfa: user.otp_enabled?)
       redirect_to after_authentication_url
     end
 

@@ -28,7 +28,10 @@ class Account::TwoFactorsController < ApplicationController
     user = Current.user
     code = params[:code].to_s
 
-    if user.authenticate(params[:password]) && (user.verify_otp(code) || user.consume_recovery_code(code))
+    # Users who signed up with Google have no password to confirm, so the code alone is the proof.
+    password_ok = !user.password_set? || user.authenticate(params[:password])
+
+    if password_ok && (user.verify_otp(code) || user.consume_recovery_code(code))
       user.disable_otp!
       UserMailer.two_factor_disabled(user).deliver_later
       redirect_to account_sessions_path, notice: "Two-factor authentication turned off.", status: :see_other

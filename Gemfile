@@ -71,3 +71,7 @@ gem "rotp", "~> 6.4"
 gem "rqrcode", "~> 3.2"
 
 gem "pundit", "~> 2.5"
+
+gem "omniauth", "~> 2.4"
+gem "omniauth_openid_connect", "~> 0.8.0"
+gem "omniauth-rails_csrf_protection", "~> 2.0"

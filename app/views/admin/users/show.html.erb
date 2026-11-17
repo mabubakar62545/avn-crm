@@ -19,6 +19,10 @@
       <dt>Failed logins</dt><dd><%= @user.failed_login_attempts %></dd>
       <dt>Locked until</dt><dd><%= @user.locked? ? @user.locked_until.to_fs(:long) : "—" %></dd>
       <dt>Joined</dt><dd><%= @user.created_at.to_date.to_fs(:long) %></dd>
+      <% if @user.invited_at? %>
+        <dt>Invited</dt>
+        <dd><%= @user.invited_at.to_fs(:long) %><%= " by #{@user.invited_by.email_address}" if @user.invited_by %><%= " (not accepted yet)" if @user.invitation_pending? %></dd>
+      <% end %>
     </dl>
   </section>
 
@@ -40,6 +44,9 @@
     <div class="row" style="margin-top:1rem">
       <% if @user.locked? && policy(@user).unlock? %>
         <%= button_to "Unlock account", unlock_admin_user_path(@user), method: :patch, class: "btn btn--secondary" %>
+      <% end %>
+      <% if policy(@user).resend_invitation? %>
+        <%= button_to "Resend invitation", resend_invitation_admin_user_path(@user), method: :post, class: "btn btn--secondary" %>
       <% end %>
       <% if policy(@user).revoke_sessions? %>
         <%= button_to "Sign out of all devices", revoke_sessions_admin_user_path(@user), method: :delete, class: "btn btn--danger" %>

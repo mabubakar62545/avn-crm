@@ -16,12 +16,13 @@
     <%= form.submit "Sign in", class: "btn btn--block" %>
   <% end %>
 
+  <%= render "shared/sso_buttons", action: "Sign in" %>
+
   <div class="auth-links">
     <%= link_to "Forgot password?", new_password_path %>
     <%= link_to "Didn't get the confirmation email?", new_email_verification_path %>
   </div>
 </div>
-
 <p class="text-center muted small" style="margin-top:1rem">
   New here? <%= link_to "Create an account", new_registration_path %>
 </p>

@@ -1,7 +1,7 @@
 require "test_helper"
 
 class SessionsControllerTest < ActionDispatch::IntegrationTest
-  setup { @user = users(:member) }
+  setup { @user = users(:client) }
 
   test "new renders the sign-in form" do
     get new_session_path
