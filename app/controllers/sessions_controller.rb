@@ -10,7 +10,8 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user = User.authenticate_by(params.permit(:email_address, :password))
+    # Both keys always present: authenticate_by raises (500) if the password key is missing.
+    user = User.authenticate_by(email_address: params[:email_address].to_s, password: params[:password].to_s)
 
     if user.nil?
       candidate = User.find_by(email_address: params[:email_address])

@@ -16,7 +16,9 @@ class User < ApplicationRecord
             format: { with: URI::MailTo::EMAIL_REGEXP }
 
   validates :password, length: { minimum: 12 }, allow_nil: true
-  validate  :password_must_differ_from_email, if: -> { password.present? }
+  # Skipped for the generated password from assign_unusable_password: it is random and never
+  # typed, and checking it would randomly reject short email names (e.g. "a@gmail.com").
+  validate  :password_must_differ_from_email, if: -> { password.present? && !@unusable_password }
 
   MAX_FAILED_LOGINS = 10
   LOCKOUT_DURATION  = 30.minutes

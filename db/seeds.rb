@@ -19,7 +19,7 @@ if Rails.env.local?
     { email_address: "client@avn-crm.test",  role: "client" },
     { email_address: "locked@avn-crm.test",  role: "client", locked_until: 1.day.from_now, failed_login_attempts: 0 },
     { email_address: "pending@avn-crm.test", role: "client", verified_at: nil }
-  ]
+   ]
 
   demo_users.each do |attrs|
     User.find_or_create_by!(email_address: attrs[:email_address]) do |user|

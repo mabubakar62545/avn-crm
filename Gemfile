@@ -75,3 +75,13 @@ gem "pundit", "~> 2.5"
 gem "omniauth", "~> 2.4"
 gem "omniauth_openid_connect", "~> 0.8.0"
 gem "omniauth-rails_csrf_protection", "~> 2.0"
+
+group :development, :test do
+  gem "rspec-rails", "~> 8.0"
+  gem "factory_bot_rails", "~> 6.5"
+end
+
+group :test do
+  gem "shoulda-matchers", "~> 6.5"
+  gem "simplecov", require: false
+end
